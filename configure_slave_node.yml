@@ -1,0 +1,22 @@
+- name: Configure and Verify Slave Node for PHP Application
+  hosts: slave
+  become: yes
+  tasks:
+    - name: Execute install_lamp.sh script (assuming it installs LAMP)
+      script: ./install_lamp.sh
+
+    - name: Check if the PHP application is accessible
+      uri:
+        url: "http://{{ ansible_host }}/index.php"  # Assuming the application index is at root
+        return_content: yes
+        register: webpage
+      until: webpage.status == 200
+      retries: 5
+      delay: 10
+
+    - name: Create cron job for checking uptime
+      cron:
+        name: "Check uptime daily at 12 AM"
+        minute: "0"
+        hour: "0"
+        job: "uptime | grep 'load average:' >> /var/log/uptime_record.log"
