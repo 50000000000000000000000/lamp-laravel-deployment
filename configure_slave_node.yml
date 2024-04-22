@@ -1,22 +1,28 @@
 - name: Configure and Verify Slave Node for PHP Application
   hosts: slave
-  become: yes
+  become: true
+
+  # Install LAMP stack on the slave node
   tasks:
-    - name: Execute install_lamp.sh script (assuming it installs LAMP)
-      script: ./install_lamp.sh
+    - name: Install LAMP stack (assuming install_lamp.sh exists)
+      script: /home/vagrant/install_lamp.sh
+      # Ensure this path is correct depending on where you've provisioned the script.
 
     - name: Check if the PHP application is accessible
       uri:
-        url: "http://{{ ansible_host }}/index.php"  # Assuming the application index is at root
-        return_content: yes
-        register: webpage
+        url: "http://{{ ansible_host }}/index.php"  # Adjust if application's index is located elsewhere.
+        method: GET
+        return_content: true
+      register: webpage
       until: webpage.status == 200
       retries: 5
       delay: 10
+      # This will retry the GET request up to 5 times with a delay of 10 seconds between each try.
 
-    - name: Create cron job for checking uptime
+    - name: Create cron job for checking uptime (runs daily at midnight)
       cron:
         name: "Check uptime daily at 12 AM"
         minute: "0"
         hour: "0"
         job: "uptime | grep 'load average:' >> /var/log/uptime_record.log"
+  # This task sets up a cron job to log the system's uptime at midnight every day.

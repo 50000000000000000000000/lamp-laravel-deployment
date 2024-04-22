@@ -1,12 +1,10 @@
 #!/bin/bash
 
-# Define variables for configuration settings
-GITHUB_REPO="https://github.com/50000000000000000000000/TODO-Application.git"
-MYSQL_ROOT_PASSWORD="your_root_password"  # Change this to your desired root password
-MYSQL_DB="todo"
-MYSQL_USER="passertech"
-MYSQL_PASSWORD="passertech"  # Updated MySQL user password
-APACHE_ROOT="/var/www/html"
+# Function to handle errors (optional)
+# error_exit() {
+#   echo "Error: $1" >&2
+#   exit 1
+# }
 
 # Update system repositories and upgrade existing packages
 echo "Updating system packages..."
@@ -21,19 +19,6 @@ echo "Enabling Apache mod_rewrite..."
 sudo a2enmod rewrite
 sudo systemctl restart apache2
 
-# Secure MySQL installation automatically
-echo "Securing MySQL installation..."
-sudo mysql_secure_installation <<EOF
-
-y
-$MYSQL_ROOT_PASSWORD
-$MYSQL_ROOT_PASSWORD
-y
-y
-y
-y
-EOF
-
 # Clone the PHP application from GitHub
 echo "Cloning the PHP application from GitHub to Apache root directory..."
 sudo git clone $GITHUB_REPO $APACHE_ROOT/todo-app
@@ -44,9 +29,9 @@ sudo chown -R www-data:www-data $APACHE_ROOT/todo-app
 sudo find $APACHE_ROOT/todo-app/ -type d -exec chmod 755 {} \;
 sudo find $APACHE_ROOT/todo-app/ -type f -exec chmod 644 {} \;
 
-# Configure MySQL database
+# Configure MySQL database (assuming a create_database.sql file exists)
 echo "Configuring MySQL database..."
-sudo mysql -u root -p$MYSQL_ROOT_PASSWORD <<MYSQL_SCRIPT
+sudo mysql -u root -p <MYSQL_ROOT_PASSWORD> <<MYSQL_SCRIPT  # Replace <MYSQL_ROOT_PASSWORD> with actual password
 CREATE DATABASE IF NOT EXISTS $MYSQL_DB;
 CREATE USER IF NOT EXISTS '$MYSQL_USER'@'localhost' IDENTIFIED BY '$MYSQL_PASSWORD';
 GRANT ALL PRIVILEGES ON $MYSQL_DB.* TO '$MYSQL_USER'@'localhost';
